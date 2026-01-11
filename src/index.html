@@ -1,32 +1,246 @@
-<!DOCTYPE html>
-<html lang="en">
-    <head>
-        <meta charset="UTF-8" />
-        <link rel="stylesheet" href="styles.css" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>PakePlus App</title>
-        <script type="module" src="/main.js" defer></script>
-    </head>
-
-    <body>
-        <main class="container">
-            <h1>Welcome to PakePlus</h1>
-            <form class="row" id="greet-form">
-                <input id="inputValue" placeholder="Enter a something..." />
-            </form>
-            <div class="resultBox">
-                <span>result: </span>
-                <span id="result"></span>
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>免责声明</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            animation: gradientBG 15s ease infinite;
+            background-size: 400% 400%;
+        }
+        
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(10px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .modal-content {
+            background: rgba(30, 41, 59, 0.85);
+            border: 1px solid rgba(94, 234, 212, 0.3);
+            border-radius: 16px;
+            padding: 40px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3), 
+                        0 0 20px rgba(94, 234, 212, 0.2) inset;
+            animation: slideIn 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+        
+        @keyframes slideIn {
+            from {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        
+        .warning-icon {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #fbbf24;
+            font-size: 48px;
+            text-shadow: 0 0 10px rgba(251, 191, 36, 0.5);
+        }
+        
+        .warning-icon::before {
+            content: "⚠️";
+        }
+        
+        .modal-title {
+            font-size: 24px;
+            font-weight: bold;
+            color: #5eead4;
+            text-align: center;
+            margin-bottom: 20px;
+            text-shadow: 0 0 5px rgba(94, 234, 212, 0.5);
+        }
+        
+        .modal-text {
+            font-size: 16px;
+            line-height: 1.6;
+            color: #e2e8f0;
+            margin-bottom: 30px;
+            text-align: justify;
+        }
+        
+        .warning-text {
+            color: #ff4d4f;
+            font-size: 20px;
+            font-weight: bold;
+            text-align: center;
+            margin: 15px 0;
+            text-shadow: 0 0 8px rgba(255, 77, 79, 0.5);
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.8; }
+            100% { opacity: 1; }
+        }
+        
+        .modal-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+        
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 120px;
+        }
+        
+        .btn-agree {
+            background: linear-gradient(135deg, #0ea5e9 0%, #0d9488 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(14, 165, 233, 0.3);
+        }
+        
+        .btn-agree:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(14, 165, 233, 0.5);
+        }
+        
+        .btn-disagree {
+            background: transparent;
+            color: #94a3b8;
+            border: 1px solid rgba(148, 163, 184, 0.5);
+        }
+        
+        .btn-disagree:hover {
+            background: rgba(148, 163, 184, 0.1);
+            color: #e2e8f0;
+        }
+        
+        .loading-spinner {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 2000;
+        }
+        
+        .loading-spinner::before {
+            content: "";
+            display: block;
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(30, 41, 59, 0.3);
+            border-top: 3px solid #5eead4;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            box-shadow: 0 0 10px rgba(94, 234, 212, 0.5);
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal-content">
+            <div class="warning-icon"></div>
+            <h2 class="modal-title">重要声明</h2>
+            <p class="modal-text">
+                本软件仅提供web页面服务，并不提供影片资源存储，也不参与录制、上传等。
+                <div class="warning-text">请不要点击网页中的任何广告，以免上当受骗！！！</div>
+                <div class="warning-text">请不要点击网页中的任何广告，以免上当受骗！！！</div>
+                <div class="warning-text">请不要点击网页中的任何广告，以免上当受骗！！！</div>
+            </p>
+            <div class="modal-buttons">
+                <button class="btn btn-disagree" onclick="handleDisagree()">不同意</button>
+                <button class="btn btn-agree" onclick="handleAgree()">我已知晓并同意</button>
             </div>
-            <div class="invokeBox">
-                <button id="openUrl">open_url_browser</button>
-                <button id="openUrlNew">open_url_new</button>
-                <button id="runCommand">run_command</button>
-                <button id="downloadFile">download_file</button>
-                <button id="getExeDir">get_exe_dir</button>
-                <button id="getEnvVar">get_env_var</button>
-                <button id="findPort">find_port</button>
-            </div>
-        </main>
-    </body>
+        </div>
+    </div>
+    
+    <div class="loading-spinner" id="loadingSpinner"></div>
+    
+    <script>
+        // 页面加载时显示弹窗
+        window.addEventListener('load', function() {
+            document.getElementById('modalOverlay').style.display = 'flex';
+        });
+        
+        // 处理同意按钮点击
+        function handleAgree() {
+            // 显示加载动画
+            document.getElementById('loadingSpinner').style.display = 'block';
+            
+            // 延迟跳转，给用户更好的体验
+            setTimeout(function() {
+                window.location.href = 'http://www.age.tv/';
+            }, 800);
+        }
+        
+        // 处理不同意按钮点击
+        function handleDisagree() {
+            // 关闭当前窗口
+            if (confirm('您确定要退出吗？')) {
+                window.close();
+                // 如果无法关闭窗口，显示提示信息
+                setTimeout(function() {
+                    alert('请手动关闭此窗口');
+                }, 100);
+            }
+        }
+        
+        // 防止用户通过ESC键关闭弹窗
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                e.preventDefault();
+            }
+        });
+        
+        // 防止用户通过点击背景关闭弹窗
+        document.getElementById('modalOverlay').addEventListener('click', function(e) {
+            if (e.target === this) {
+                e.preventDefault();
+            }
+        });
+    </script>
+</body>
 </html>
